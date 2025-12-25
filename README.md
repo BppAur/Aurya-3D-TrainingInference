@@ -12,7 +12,7 @@
 <br/>
 
 <div align="center">
-  <img src="assets/images/teaser.png" width="100%" alt="UltraShape 1.0 Teaser" />
+  <img src="asset/images/teaser.png" width="100%" alt="UltraShape 1.0 Teaser" />
 </div>
 
 <br/>
@@ -31,19 +31,6 @@ Extensive evaluations demonstrate that UltraShape 1.0 performs competitively wit
 * **[2025-12-25]** 📄 We released the technical report of **UltraShape 1.0** on arXiv.
 * **[Coming Soon]** 🚀 Training code and pre-trained models will be released soon. Stay tuned!
 
-## 💡 Key Features
-
-### 1. Scalable Two-Stage Generation
-We adopt a coarse-to-fine strategy. The model first synthesizes a global structure and then performs voxel-based refinement to hallucinate high-frequency geometric details.
-
-### 2. Robust Data Processing Pipeline
-We train exclusively on publicly available 3D datasets. Our novel pipeline includes:
-* **Watertight Processing:** Effectively fills holes and repairs non-manifold geometry.
-* **Quality Filtering:** Automatically removes low-quality samples to ensure high training stability.
-
-### 3. Decoupled Spatial Refinement
-We introduce a mechanism to decouple spatial localization from detail synthesis. By using voxel queries with **RoPE (Rotary Positional Embeddings)** as explicit positional anchors, the model can focus purely on local geometric details within a structured solution space.
-
 ## 🗓️ To-Do List
 - [ ] Release inference code
 - [ ] Release pre-trained weights (Hugging Face)
@@ -60,7 +47,22 @@ cd UltraShape
 pip install -r requirements.txt
 ```
 
+## 🔗 BibTeX
+
+If you found this repository helpful, please cite our reports:
+
+```bibtex
+@article{jia2025ultrashape,
+    title={UltraShape 1.0: High-Fidelity 3D Shape Generation via Scalable Geometric Refinement},
+    author={Jia, Tanghui and Yan, Dongyu and Hao, Dehao and Li, Yang and Zhang, Kaiyi and He, Xianyi and Li, Lanjiong and Chen, Jinnan and Jiang, Lutao and Yin, Qishen and Quan, Long and Chen, Ying-Cong and Yuan, Li},
+    journal={arxiv preprint arXiv:2512.21185},
+    year={2025}
+}
+```
+
 ## Acknowledgements
 
-- **[Hunyuan3D-2.1](https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1)** (Open Source)
+Our code is built upon the excellent work of [Hunyuan3D-2.1](https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1). The core idea of our method is greatly inspired by [LATTICE](https://arxiv.org/abs/2512.03052). We deeply appreciate the contributions of these works to the 3D generation community. Please also consider citing **Hunyuan3D 2.1** and **LATTICE**:
+
+- **[Hunyuan3D-2.1](https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1)**
 - **[Lattice3D](https://lattice3d.github.io/)**
