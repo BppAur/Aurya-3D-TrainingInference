@@ -55,8 +55,6 @@ class ObjaverseDataset(Dataset):
         tsdf_threshold: float = 0.05,
         sharpedge_label: bool = False,
         return_normal: bool = False,
-        deterministic = False,
-        worker_seed = None,
     ):
         super().__init__()
 
