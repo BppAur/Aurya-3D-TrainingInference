@@ -14,8 +14,7 @@ services:
       --input-dir /input
       --output-dir /output
       --num-workers 4
-      --num-views 4
-      --limit 10
+      --num-views 16
     profiles:
       - processing
 

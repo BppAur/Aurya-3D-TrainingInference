@@ -34,22 +34,23 @@ ls -lh data/input/
 ## Passo 3: Processar Dados de Teste
 
 ```bash
-# Processar 3 modelos de teste
-docker compose --profile processing run --rm processing \
-  --input-dir /input \
-  --output-dir /output \
-  --num-workers 4 \
-  --num-views 16 \
-  --limit 3
+# Processar todos os modelos em data/input/
+docker compose --profile processing run --rm processing
+
+# Ou com limite para testes rápidos (3 modelos)
+docker compose --profile processing run --rm processing --limit 3
 ```
 
-**Tempo:** ~5-10 minutos para 3 modelos
+**Tempo:** ~2-3 minutos por modelo (watertight processing)
 
 **O que acontece:**
-1. Watertight mesh processing (PyMeshLab)
-2. Blender rendering (16 views RGBA por modelo)
-3. Criação de train.json e val.json
-4. Criação de render.json
+1. ✅ Detecção automática de formato (STL, OBJ, FBX, PLY, etc.)
+2. ✅ Watertight mesh processing (PyMeshLab) - **Funciona no macOS**
+3. ❌ Blender rendering (16 views RGBA) - **Não funciona no macOS (Rosetta)**
+4. Criação de train.json e val.json
+5. Criação de render.json
+
+**Nota macOS:** Blender rendering falha no Apple Silicon. Pipeline completo requer RunPod (Linux).
 
 ---
 
