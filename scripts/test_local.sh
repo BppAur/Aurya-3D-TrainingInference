@@ -306,10 +306,16 @@ if [ $TESTS_FAILED -eq 0 ]; then
     echo -e "${GREEN}✅ ALL TESTS PASSED!${NC}"
     echo -e "${GREEN}========================================${NC}"
     echo ""
+
+    # Auto-create data directories
+    mkdir -p data/input data/output
+    echo "✓ Created data/input/ and data/output/"
+    echo ""
+
     echo "You're ready to test with sample data!"
     echo ""
     echo "Next steps:"
-    echo "1. Place 3-5 test .obj files in data/input/"
+    echo "1. Place 3-5 test models in data/input/ (any format: OBJ, STL, FBX, PLY)"
     echo "2. Run: docker compose --profile processing run processing --input-dir /input --output-dir /output --limit 3"
     echo "3. Verify output with: python3 validate_data.py"
     echo "4. Push to git and deploy to RunPod"
