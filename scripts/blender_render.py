@@ -64,14 +64,10 @@ def load_mesh(mesh_path):
     return imported_obj
 
 
-def render_view(output_path, angle_deg=0):
+def render_view(mesh_obj, output_path, angle_deg=0):
     """Render single view at specified angle."""
-    # Rotate object
-    if not bpy.context.scene.objects:
-        raise RuntimeError("No objects in scene to render")
-
-    obj = bpy.context.scene.objects[0]
-    obj.rotation_euler = (0, 0, math.radians(angle_deg))
+    # Rotate mesh object
+    mesh_obj.rotation_euler = (0, 0, math.radians(angle_deg))
 
     # Render
     bpy.context.scene.render.filepath = output_path
@@ -110,13 +106,13 @@ def main():
     bpy.context.scene.cycles.samples = 128
 
     # Load mesh
-    load_mesh(args.mesh)
+    mesh_obj = load_mesh(args.mesh)
 
     # Render multiple views
     angles = [i * (360 / args.views) for i in range(args.views)]
     for i, angle in enumerate(angles):
         output_path = str(output_dir / f"view_{i}.png")
-        render_view(output_path, angle)
+        render_view(mesh_obj, output_path, angle)
         print(f"Rendered view {i} at {angle}° -> {output_path}")
 
 

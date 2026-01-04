@@ -7,7 +7,6 @@ import argparse
 import json
 import logging
 import multiprocessing as mp
-import os
 import random
 import subprocess
 from pathlib import Path
