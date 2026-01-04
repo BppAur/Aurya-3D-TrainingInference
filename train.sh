@@ -9,7 +9,14 @@ export master_ip="${MASTER_IP:-localhost}"
 if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then
     # Auto-detect available GPUs
     num_gpu_per_node=$(nvidia-smi --list-gpus | wc -l)
-    export CUDA_VISIBLE_DEVICES=$(seq -s, 0 $((num_gpu_per_node - 1)))
+
+    # Validate that at least one GPU is available
+    if [ "$num_gpu_per_node" -eq 0 ]; then
+        echo "Error: No GPUs detected. Please ensure CUDA is properly configured." >&2
+        exit 1
+    fi
+
+    export CUDA_VISIBLE_DEVICES=$(seq 0 $((num_gpu_per_node - 1)) | paste -sd, -)
     export num_gpu_per_node
 else
     # Count GPUs from CUDA_VISIBLE_DEVICES
