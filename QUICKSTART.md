@@ -21,7 +21,7 @@ mkdir -p data/input data/output
 
 # Copiar 3-5 modelos de teste (qualquer formato)
 # Formatos suportados: OBJ, STL, FBX, PLY, OFF, 3DS, DAE, GLTF, GLB
-cp /path/to/your/models/*.{obj,stl,fbx,ply} data/input/
+cp /path/to/models/*.{obj,stl,fbx,ply} data/input/
 
 # Verificar
 ls -lh data/input/
