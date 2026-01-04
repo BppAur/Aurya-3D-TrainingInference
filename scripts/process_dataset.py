@@ -54,7 +54,9 @@ def process_single_model(args_tuple):
             return None
 
         # Step 2: Blender rendering
-        render_dir = output_dir / "renders" / model_id
+        # Create nested structure: renders/{model_id}/{model_id}/rgba/
+        render_base = output_dir / "renders" / model_id
+        render_dir = render_base / model_id
         render_dir.mkdir(parents=True, exist_ok=True)
 
         cmd = [
@@ -78,7 +80,7 @@ def process_single_model(args_tuple):
         return {
             "model_id": model_id,
             "watertight_mesh": str(watertight_path),
-            "renders": [str(render_dir / f"view_{i}.png") for i in range(num_views)],
+            "render_base": str(render_base),  # Base path for render.json
             "sample": str(sample_dir / f"{model_id}.npz")
         }
 
@@ -105,8 +107,8 @@ def create_dataset_splits(metadata: List[Dict], output_dir: Path, train_ratio=0.
     with open(data_list_dir / "val.json", "w") as f:
         json.dump([m["model_id"] for m in val_data], f, indent=2)
 
-    # Create render mapping
-    render_mapping = {m["model_id"]: m["renders"] for m in metadata}
+    # Create render mapping - dict of base paths, not file lists
+    render_mapping = {m["model_id"]: m["render_base"] for m in metadata}
     with open(output_dir / "render.json", "w") as f:
         json.dump(render_mapping, f, indent=2)
 
@@ -118,7 +120,7 @@ def main():
     parser.add_argument("--input-dir", required=True, help="Directory with input .obj files")
     parser.add_argument("--output-dir", required=True, help="Output directory for processed data")
     parser.add_argument("--num-workers", type=int, default=4, help="Number of parallel workers")
-    parser.add_argument("--num-views", type=int, default=4, help="Number of render views per model")
+    parser.add_argument("--num-views", type=int, default=16, help="Number of render views per model")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of models to process")
     args = parser.parse_args()
 

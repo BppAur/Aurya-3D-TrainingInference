@@ -69,6 +69,9 @@ def render_view(mesh_obj, output_path, angle_deg=0):
     # Rotate mesh object
     mesh_obj.rotation_euler = (0, 0, math.radians(angle_deg))
 
+    # Ensure RGBA output
+    bpy.context.scene.render.image_settings.color_mode = 'RGBA'
+
     # Render
     bpy.context.scene.render.filepath = output_path
     bpy.ops.render.render(write_still=True)
@@ -85,11 +88,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mesh", required=True, help="Input mesh file")
     parser.add_argument("--output", required=True, help="Output directory")
-    parser.add_argument("--views", type=int, default=4, help="Number of views")
+    parser.add_argument("--views", type=int, default=16, help="Number of views")
     parser.add_argument("--resolution", type=int, default=1024, help="Image resolution")
     args = parser.parse_args(argv)
 
-    output_dir = Path(args.output)
+    # Create rgba subdirectory
+    output_dir = Path(args.output) / "rgba"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Setup scene
@@ -108,10 +112,10 @@ def main():
     # Load mesh
     mesh_obj = load_mesh(args.mesh)
 
-    # Render multiple views
+    # Render multiple views with 3-digit zero-padded filenames
     angles = [i * (360 / args.views) for i in range(args.views)]
     for i, angle in enumerate(angles):
-        output_path = str(output_dir / f"view_{i}.png")
+        output_path = str(output_dir / f"{i:03d}.png")
         render_view(mesh_obj, output_path, angle)
         print(f"Rendered view {i} at {angle}° -> {output_path}")
 

@@ -1,0 +1,29 @@
+# Minimal dependencies for inference only
+# Install with: pip install -r requirements_inference.txt
+
+# Core dependencies
+torch>=2.0.0
+numpy==1.24.4
+Pillow==12.0.0
+PyYAML==6.0.2
+safetensors==0.7.0
+
+# Model dependencies
+diffusers==0.30.0
+transformers==4.37.2
+huggingface_hub==0.36.0
+einops==0.8.1
+timm==1.0.22
+
+# 3D processing
+trimesh==4.4.7
+pymeshlab==2022.2.post3
+
+# Image processing
+opencv_python_headless==4.11.0.86
+rembg
+onnxruntime
+
+# Utilities
+tqdm==4.66.5
+omegaconf==2.3.0

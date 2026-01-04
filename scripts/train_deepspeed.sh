@@ -53,6 +53,19 @@ echo "========================================"
 # Create output directory
 mkdir -p "$output_dir"
 
+# DeepSpeed configuration file
+DEEPSPEED_CONFIG="${DEEPSPEED_CONFIG:-configs/deepspeed_zero2.json}"
+
+# Validate DeepSpeed config exists
+if [ ! -f "$DEEPSPEED_CONFIG" ]; then
+    echo "Warning: DeepSpeed config not found: $DEEPSPEED_CONFIG"
+    echo "Continuing without DeepSpeed config (will use defaults)"
+    DEEPSPEED_CONFIG_ARG=""
+else
+    echo "Using DeepSpeed config: $DEEPSPEED_CONFIG"
+    DEEPSPEED_CONFIG_ARG="--deepspeed_config $DEEPSPEED_CONFIG"
+fi
+
 # Launch training with DeepSpeed
 deepspeed --num_nodes="$node_num" \
           --num_gpus="$num_gpu_per_node" \
@@ -61,4 +74,5 @@ deepspeed --num_nodes="$node_num" \
           --node_rank="$node_rank" \
           main.py \
           --config "$config" \
-          --output_dir "$output_dir"
+          --output_dir "$output_dir" \
+          $DEEPSPEED_CONFIG_ARG
