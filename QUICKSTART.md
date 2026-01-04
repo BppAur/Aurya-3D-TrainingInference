@@ -19,12 +19,15 @@ SKIP_BUILD=1 bash scripts/test_local.sh
 # Criar diretórios
 mkdir -p data/input data/output
 
-# Copiar 3-5 modelos OBJ de teste
-cp /path/to/your/models/*.obj data/input/
+# Copiar 3-5 modelos de teste (qualquer formato)
+# Formatos suportados: OBJ, STL, FBX, PLY, OFF, 3DS, DAE, GLTF, GLB
+cp /path/to/your/models/*.{obj,stl,fbx,ply} data/input/
 
 # Verificar
-ls -lh data/input/*.obj
+ls -lh data/input/
 ```
+
+**Nota:** O sistema detecta automaticamente o formato e converte para OBJ durante o processamento.
 
 ---
 

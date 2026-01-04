@@ -75,8 +75,10 @@ docker compose --profile inference up inference
 ### Container Purposes
 
 1. **Data Processing** (`docker/Dockerfile.processing`) - CPU-only
+   - **Supports multiple formats**: OBJ, STL, FBX, PLY, OFF, 3DS, DAE, GLTF, GLB
+   - Automatic format detection and conversion to OBJ
    - Converts raw 3D models to watertight meshes
-   - Generates multi-view renders with Blender
+   - Generates multi-view renders with Blender (16 RGBA views)
    - Creates point cloud samples
    - Organizes datasets for training
 

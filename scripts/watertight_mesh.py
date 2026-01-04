@@ -2,6 +2,7 @@
 """
 Watertight mesh processing using PyMeshLab.
 Fills holes, fixes non-manifold geometry, ensures closed surfaces.
+Supports automatic format conversion from STL, FBX, PLY, OFF, 3DS, etc. to OBJ.
 """
 import argparse
 import pymeshlab as ml
@@ -11,19 +12,38 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Supported input formats
+SUPPORTED_FORMATS = {
+    '.obj', '.stl', '.ply', '.off', '.fbx', '.3ds',
+    '.dae', '.gltf', '.glb', '.wrl', '.x3d'
+}
+
 
 def make_watertight(input_path: str, output_path: str) -> bool:
     """
-    Convert mesh to watertight format.
+    Convert mesh to watertight OBJ format.
+    Automatically handles format conversion from STL, FBX, PLY, etc.
 
     Args:
-        input_path: Path to input .obj file
+        input_path: Path to input mesh file (any supported format)
         output_path: Path to output watertight .obj file
 
     Returns:
         True if successful, False otherwise
     """
     try:
+        input_file = Path(input_path)
+        input_ext = input_file.suffix.lower()
+
+        # Validate input format
+        if input_ext not in SUPPORTED_FORMATS:
+            logger.error(f"Unsupported format: {input_ext}. Supported: {', '.join(SUPPORTED_FORMATS)}")
+            return False
+
+        # Log format conversion if not OBJ
+        if input_ext != '.obj':
+            logger.info(f"Converting {input_ext} → OBJ: {input_path}")
+
         ms = ml.MeshSet()
         ms.load_new_mesh(input_path)
 

@@ -117,7 +117,7 @@ def create_dataset_splits(metadata: List[Dict], output_dir: Path, train_ratio=0.
 
 def main():
     parser = argparse.ArgumentParser(description="Process dataset for UltraShape training")
-    parser.add_argument("--input-dir", required=True, help="Directory with input .obj files")
+    parser.add_argument("--input-dir", required=True, help="Directory with mesh files (OBJ, STL, FBX, PLY, etc.)")
     parser.add_argument("--output-dir", required=True, help="Output directory for processed data")
     parser.add_argument("--num-workers", type=int, default=4, help="Number of parallel workers")
     parser.add_argument("--num-views", type=int, default=16, help="Number of render views per model")
@@ -128,12 +128,26 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Find all .obj files
-    model_paths = list(input_dir.glob("*.obj"))
+    # Find all mesh files (multiple formats supported)
+    supported_formats = ['*.obj', '*.stl', '*.ply', '*.off', '*.fbx', '*.3ds', '*.dae', '*.gltf', '*.glb']
+    model_paths = []
+    for pattern in supported_formats:
+        model_paths.extend(input_dir.glob(pattern))
+
+    # Remove duplicates and sort
+    model_paths = sorted(set(model_paths))
+
     if args.limit:
         model_paths = model_paths[:args.limit]
 
-    logger.info(f"Found {len(model_paths)} models to process")
+    logger.info(f"Found {len(model_paths)} mesh files to process")
+
+    # Log format distribution
+    format_counts = {}
+    for path in model_paths:
+        ext = path.suffix.lower()
+        format_counts[ext] = format_counts.get(ext, 0) + 1
+    logger.info(f"Format distribution: {format_counts}")
 
     # Process models in parallel
     process_args = [(p, output_dir, args.num_views) for p in model_paths]
