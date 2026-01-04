@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Data processing service (CPU-only, runs once)
+  processing:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.processing
+    image: ultrashape-processing:latest
+    volumes:
+      - ./data/input:/input
+      - ./data/output:/output
+    command: >
+      --input-dir /input
+      --output-dir /output
+      --num-workers 4
+      --num-views 4
+      --limit 10
+    profiles:
+      - processing
+
+  # Training service (requires GPU)
+  training:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.training
+    image: ultrashape-training:latest
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - WANDB_API_KEY=${WANDB_API_KEY}
+      - WANDB_PROJECT=ultrashape-collectibles
+      - MASTER_IP=localhost
+    volumes:
+      - ./data/output:/workspace/data
+      - ./checkpoints:/workspace/checkpoints
+      - ./outputs:/workspace/outputs
+      - ./logs:/workspace/logs
+    ports:
+      - "6006:6006"  # TensorBoard
+    shm_size: '16gb'
+    profiles:
+      - training
+
+  # Inference API service (requires GPU)
+  inference:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.inference
+    image: ultrashape-inference:latest
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - CHECKPOINT_PATH=/workspace/checkpoints/ultrashape_v1.pt
+      - CONFIG_PATH=/workspace/configs/infer_dit_refine.yaml
+    volumes:
+      - ./checkpoints:/workspace/checkpoints
+      - ./temp:/workspace/temp
+    ports:
+      - "8000:8000"  # API
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - inference
