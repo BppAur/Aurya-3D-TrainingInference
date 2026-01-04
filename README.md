@@ -67,9 +67,10 @@ docker compose --profile inference up inference
 
 ### Detailed Documentation
 
-- **Docker Usage**: See [docs/README-docker.md](docs/README-docker.md)
-- **RunPod Deployment**: See [docs/RUNPOD-GUIDE.md](docs/RUNPOD-GUIDE.md)
-- **Design Document**: See [docs/plans/2026-01-04-ultrashape-finetuning-design.md](docs/plans/2026-01-04-ultrashape-finetuning-design.md)
+- **📋 Step-by-Step Guide**: See [docs/STEP-BY-STEP-GUIDE.md](docs/STEP-BY-STEP-GUIDE.md) - **Start here!**
+- **🐳 Docker Usage**: See [docs/README-docker.md](docs/README-docker.md)
+- **☁️ RunPod Deployment**: See [docs/RUNPOD-GUIDE.md](docs/RUNPOD-GUIDE.md)
+- **📐 Design Document**: See [docs/plans/2026-01-04-ultrashape-finetuning-design.md](docs/plans/2026-01-04-ultrashape-finetuning-design.md)
 
 ### Container Purposes
 
