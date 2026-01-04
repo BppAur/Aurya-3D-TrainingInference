@@ -40,6 +40,84 @@ Extensive evaluations demonstrate that UltraShape 1.0 performs competitively wit
 
 ## 🛠️ Installation & Usage
 
+## 🐳 Docker Setup (Recommended)
+
+We provide three Docker containers for the complete fine-tuning pipeline on your custom 3D models:
+
+### Quick Start
+
+```bash
+# 1. Build containers
+docker compose build
+
+# 2. Process your 3D models
+docker compose --profile processing run processing \
+  --input-dir /input \
+  --output-dir /output \
+  --num-workers 4 \
+  --num-views 4
+
+# 3. Train model (requires GPU)
+export WANDB_API_KEY=your_key
+docker compose --profile training up training
+
+# 4. Run inference API (requires GPU)
+docker compose --profile inference up inference
+```
+
+### Detailed Documentation
+
+- **Docker Usage**: See [docs/README-docker.md](docs/README-docker.md)
+- **RunPod Deployment**: See [docs/RUNPOD-GUIDE.md](docs/RUNPOD-GUIDE.md)
+- **Design Document**: See [docs/plans/2026-01-04-ultrashape-finetuning-design.md](docs/plans/2026-01-04-ultrashape-finetuning-design.md)
+
+### Container Purposes
+
+1. **Data Processing** (`docker/Dockerfile.processing`) - CPU-only
+   - Converts raw 3D models to watertight meshes
+   - Generates multi-view renders with Blender
+   - Creates point cloud samples
+   - Organizes datasets for training
+
+2. **Training** (`docker/Dockerfile.training`) - GPU required
+   - Fine-tunes DiT model on your dataset
+   - DeepSpeed optimization for efficient training
+   - WandB + TensorBoard monitoring
+   - Multi-GPU support with auto-detection
+
+3. **Inference** (`docker/Dockerfile.inference`) - GPU required
+   - REST API for mesh refinement
+   - Lightweight, optimized for inference speed
+   - Health checks and monitoring endpoints
+
+### RunPod Cloud Deployment
+
+Deploy on cloud GPUs (A40/A5000/H100) with our automated setup:
+
+```bash
+# SSH to your RunPod instance
+ssh root@<runpod-ip> -p <ssh-port>
+
+# Run automated setup script
+cd /workspace
+git clone <your-repo-url> UltraShape-Training
+cd UltraShape-Training
+bash scripts/runpod_setup.sh
+```
+
+**Monitor training from your macOS:**
+- **TensorBoard**: `ssh -L 6006:localhost:6006 root@<runpod-ip> -p <ssh-port>` → http://localhost:6006
+- **WandB**: https://wandb.ai/<username>/ultrashape-collectibles
+- **Inference API**: `ssh -L 8000:localhost:8000 root@<runpod-ip> -p <ssh-port>` → http://localhost:8000
+
+**Cost Estimates:**
+- Testing on A40/A5000: ~$15 (pipeline validation)
+- Production on H100: ~$180 (full 30k model training)
+
+See [docs/RUNPOD-GUIDE.md](docs/RUNPOD-GUIDE.md) for complete deployment instructions.
+
+---
+
 ### 1. Environment Setup
 ```bash
 git clone https://github.com/PKU-YuanGroup/UltraShape-1.0.git
