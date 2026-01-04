@@ -95,18 +95,28 @@ docker compose --profile inference up inference
 
 ### RunPod Cloud Deployment
 
-Deploy on cloud GPUs (A40/A5000/H100) with our automated setup:
+Deploy on cloud GPUs (A40/A5000/H100) with automated setup and upload:
 
+**Step 1: Prepare models locally**
 ```bash
-# SSH to your RunPod instance
-ssh root@<runpod-ip> -p <ssh-port>
+# Copy your models to dataset folder
+cp /path/to/your/models/*.stl dataset/
+```
 
-# Run automated setup script
-cd /workspace
-git clone <your-repo-url> UltraShape-Training
-cd UltraShape-Training
+**Step 2: Create RunPod pod and upload**
+```bash
+# Get RunPod IP and SSH port from console, then upload
+bash upload.sh <runpod-ip> <ssh-port>
+```
+
+**Step 3: SSH and run setup**
+```bash
+ssh root@<runpod-ip> -p <ssh-port>
+cd /workspace/UltraShape-Training
 bash scripts/runpod_setup.sh
 ```
+
+See [docs/UPLOAD-GUIDE.md](docs/UPLOAD-GUIDE.md) for upload methods and Network Volume setup.
 
 **Monitor training from your macOS:**
 - **TensorBoard**: `ssh -L 6006:localhost:6006 root@<runpod-ip> -p <ssh-port>` → http://localhost:6006
