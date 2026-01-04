@@ -1,0 +1,60 @@
+FROM nvidia/cuda:12.1.0-cudnn8-devel-ubuntu22.04
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    python3.10-dev \
+    git \
+    wget \
+    build-essential \
+    ninja-build \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install PyTorch with CUDA 12.1
+RUN pip3 install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 \
+    --index-url https://download.pytorch.org/whl/cu121
+
+# Install flash attention (requires CUDA)
+RUN pip3 install --no-cache-dir flash-attn==2.8.3 --no-build-isolation
+
+# Install other dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install cubvh for MC acceleration
+RUN pip3 install --no-cache-dir git+https://github.com/ashawkey/cubvh --no-build-isolation
+
+# Install PyTorch3D
+RUN pip3 install --no-cache-dir --no-build-isolation \
+    "git+https://github.com/facebookresearch/pytorch3d.git@stable"
+
+# Install torch_cluster
+RUN pip3 install --no-cache-dir \
+    https://data.pyg.org/whl/torch-2.5.0%2Bcu121/torch_cluster-1.6.3%2Bpt25cu121-cp310-cp310-linux_x86_64.whl
+
+# Copy project files
+COPY . /workspace/
+
+# Create necessary directories
+RUN mkdir -p /workspace/data /workspace/checkpoints /workspace/outputs /workspace/logs
+
+# Set environment variables for training
+ENV CUDA_HOME=/usr/local/cuda
+ENV TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 8.6 9.0+PTX"
+ENV FORCE_CUDA=1
+
+# Expose TensorBoard port
+EXPOSE 6006
+
+# Default command
+CMD ["bash", "train.sh", "0"]
