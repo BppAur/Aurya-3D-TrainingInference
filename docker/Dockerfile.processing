@@ -12,11 +12,15 @@ RUN apt-get update && apt-get install -y \
     wget \
     xz-utils \
     libglu1-mesa \
+    libgl1-mesa-glx \
     libxi6 \
     libxrender1 \
     libxkbcommon0 \
     libsm6 \
     libgomp1 \
+    libharfbuzz0b \
+    libfreetype6 \
+    libpng16-16 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Blender 3.6 LTS (headless)
@@ -32,7 +36,7 @@ WORKDIR /workspace
 # Install Python dependencies
 RUN pip3 install --no-cache-dir --upgrade pip && \
     pip3 install --no-cache-dir \
-    pymeshlab==2022.2.post3 \
+    pymeshlab==2025.7 \
     numpy==1.24.4 \
     trimesh==4.4.7 \
     Pillow==12.0.0 \
