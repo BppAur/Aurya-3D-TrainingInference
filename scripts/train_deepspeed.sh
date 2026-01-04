@@ -1,19 +1,41 @@
 #!/bin/bash
+set -euo pipefail
 
 # DeepSpeed multi-node training launcher
 # Usage: bash scripts/train_deepspeed.sh <node_num> <node_rank> <num_gpu_per_node> <master_ip> <config> <output_dir>
 
-node_num=$1
-node_rank=$2
-num_gpu_per_node=$3
-master_ip=$4
-config=$5
-output_dir=$6
+# Validate all required parameters are provided
+if [ $# -ne 6 ]; then
+    echo "Error: Missing required parameters"
+    echo "Usage: bash scripts/train_deepspeed.sh <node_num> <node_rank> <num_gpu_per_node> <master_ip> <config> <output_dir>"
+    echo "Example: bash scripts/train_deepspeed.sh 1 0 8 localhost configs/train_dit.yaml outputs/dit"
+    exit 1
+fi
+
+node_num="$1"
+node_rank="$2"
+num_gpu_per_node="$3"
+master_ip="$4"
+config="$5"
+output_dir="$6"
+
+# Validate config file exists
+if [ ! -f "$config" ]; then
+    echo "Error: Config file does not exist: $config"
+    exit 1
+fi
+
+# Validate DeepSpeed is installed
+if ! command -v deepspeed &> /dev/null; then
+    echo "Error: deepspeed command not found. Please install DeepSpeed:"
+    echo "  pip install deepspeed"
+    exit 1
+fi
 
 # Set distributed training environment variables
-export MASTER_ADDR=${master_ip:-"localhost"}
-export MASTER_PORT=${MASTER_PORT:-29500}
-export NODE_RANK=$node_rank
+export MASTER_ADDR="${master_ip:-localhost}"
+export MASTER_PORT="${MASTER_PORT:-29500}"
+export NODE_RANK="$node_rank"
 export WORLD_SIZE=$((node_num * num_gpu_per_node))
 
 echo "========================================"
@@ -29,14 +51,14 @@ echo "Output Dir: $output_dir"
 echo "========================================"
 
 # Create output directory
-mkdir -p $output_dir
+mkdir -p "$output_dir"
 
 # Launch training with DeepSpeed
-deepspeed --num_nodes=$node_num \
-          --num_gpus=$num_gpu_per_node \
-          --master_addr=$MASTER_ADDR \
-          --master_port=$MASTER_PORT \
-          --node_rank=$node_rank \
+deepspeed --num_nodes="$node_num" \
+          --num_gpus="$num_gpu_per_node" \
+          --master_addr="$MASTER_ADDR" \
+          --master_port="$MASTER_PORT" \
+          --node_rank="$node_rank" \
           main.py \
-          --config $config \
-          --output_dir $output_dir
+          --config "$config" \
+          --output_dir "$output_dir"

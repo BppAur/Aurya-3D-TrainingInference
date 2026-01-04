@@ -33,15 +33,24 @@ def download_pretrained_weights(output_dir: str, model_type: str = "dit"):
 
     logger.info(f"Downloading {filename} from {repo_id}...")
 
-    local_path = hf_hub_download(
-        repo_id=repo_id,
-        filename=filename,
-        local_dir=output_dir,
-        local_dir_use_symlinks=False
-    )
-
-    logger.info(f"Downloaded to: {local_path}")
-    return local_path
+    try:
+        local_path = hf_hub_download(
+            repo_id=repo_id,
+            filename=filename,
+            local_dir=output_dir,
+            local_dir_use_symlinks=False
+        )
+        logger.info(f"Downloaded to: {local_path}")
+        return local_path
+    except Exception as e:
+        logger.error(f"Failed to download {filename} from {repo_id}")
+        logger.error(f"Error: {str(e)}")
+        logger.error("Please check:")
+        logger.error("  1. Your internet connection")
+        logger.error("  2. The repository exists and is accessible")
+        logger.error("  3. The filename is correct")
+        logger.error("  4. You have sufficient disk space")
+        raise
 
 
 def main():
