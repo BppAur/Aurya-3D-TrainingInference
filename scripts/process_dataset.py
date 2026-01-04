@@ -7,6 +7,8 @@ import argparse
 import json
 import logging
 import multiprocessing as mp
+import os
+import random
 import subprocess
 from pathlib import Path
 from typing import List, Dict
@@ -15,6 +17,9 @@ from tqdm import tqdm
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Get script directory for relative path resolution
+SCRIPT_DIR = Path(__file__).parent.resolve()
+
 
 def process_single_model(args_tuple):
     """Process a single model through the pipeline."""
@@ -22,13 +27,25 @@ def process_single_model(args_tuple):
     model_id = model_path.stem
 
     try:
+        # Determine script paths (works in Docker and locally)
+        # In Docker: /workspace/scripts/
+        # Locally: relative to this script
+        watertight_script = SCRIPT_DIR / "watertight_mesh.py"
+        blender_script = SCRIPT_DIR / "blender_render.py"
+
+        # Fallback to Docker paths if local scripts don't exist
+        if not watertight_script.exists():
+            watertight_script = Path("/workspace/scripts/watertight_mesh.py")
+        if not blender_script.exists():
+            blender_script = Path("/workspace/scripts/blender_render.py")
+
         # Step 1: Watertight processing
         watertight_dir = output_dir / "meshes"
         watertight_dir.mkdir(parents=True, exist_ok=True)
         watertight_path = watertight_dir / f"{model_id}.obj"
 
         cmd = [
-            "python3", "/workspace/scripts/watertight_mesh.py",
+            "python3", str(watertight_script),
             "--input", str(model_path),
             "--output", str(watertight_path)
         ]
@@ -43,7 +60,7 @@ def process_single_model(args_tuple):
 
         cmd = [
             "blender", "--background", "--python",
-            "/workspace/scripts/blender_render.py", "--",
+            str(blender_script), "--",
             "--mesh", str(watertight_path),
             "--output", str(render_dir),
             "--views", str(num_views),
@@ -71,9 +88,9 @@ def process_single_model(args_tuple):
         return None
 
 
-def create_dataset_splits(metadata: List[Dict], output_dir: Path, train_ratio=0.9):
+def create_dataset_splits(metadata: List[Dict], output_dir: Path, train_ratio=0.9, seed=42):
     """Create train/val splits and save JSON files."""
-    import random
+    random.seed(seed)
     random.shuffle(metadata)
 
     split_idx = int(len(metadata) * train_ratio)

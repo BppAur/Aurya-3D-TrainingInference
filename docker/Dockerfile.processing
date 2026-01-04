@@ -29,9 +29,6 @@ RUN wget -q https://download.blender.org/release/Blender3.6/blender-3.6.5-linux-
 # Set working directory
 WORKDIR /workspace
 
-# Copy requirements
-COPY requirements.txt .
-
 # Install Python dependencies
 RUN pip3 install --no-cache-dir --upgrade pip && \
     pip3 install --no-cache-dir \
@@ -46,7 +43,6 @@ RUN pip3 install --no-cache-dir --upgrade pip && \
 COPY scripts/blender_render.py /workspace/scripts/
 COPY scripts/watertight_mesh.py /workspace/scripts/
 COPY scripts/process_dataset.py /workspace/scripts/
-COPY scripts/sampling.py /workspace/scripts/
 
 # Set entrypoint
 ENTRYPOINT ["python3", "/workspace/scripts/process_dataset.py"]

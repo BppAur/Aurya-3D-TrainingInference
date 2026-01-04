@@ -54,6 +54,9 @@ def load_mesh(mesh_path):
         raise ValueError(f"Unsupported mesh format: {mesh_path}")
 
     # Get imported object and center it
+    if not bpy.context.selected_objects:
+        raise RuntimeError(f"No objects were imported from {mesh_path}")
+
     imported_obj = bpy.context.selected_objects[0]
     bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS')
     imported_obj.location = (0, 0, 0)
@@ -64,6 +67,9 @@ def load_mesh(mesh_path):
 def render_view(output_path, angle_deg=0):
     """Render single view at specified angle."""
     # Rotate object
+    if not bpy.context.scene.objects:
+        raise RuntimeError("No objects in scene to render")
+
     obj = bpy.context.scene.objects[0]
     obj.rotation_euler = (0, 0, math.radians(angle_deg))
 

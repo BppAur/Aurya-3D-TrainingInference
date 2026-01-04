@@ -54,8 +54,17 @@ def make_watertight(input_path: str, output_path: str) -> bool:
         logger.info(f"Successfully processed: {input_path} -> {output_path}")
         return True
 
+    except FileNotFoundError as e:
+        logger.error(f"Input file not found {input_path}: {e}")
+        return False
+    except PermissionError as e:
+        logger.error(f"Permission denied accessing {input_path} or {output_path}: {e}")
+        return False
+    except (ValueError, RuntimeError) as e:
+        logger.error(f"Mesh processing error for {input_path}: {e}")
+        return False
     except Exception as e:
-        logger.error(f"Failed to process {input_path}: {e}")
+        logger.error(f"Unexpected error processing {input_path}: {e}")
         return False
 
 
