@@ -1,0 +1,66 @@
+# Lightweight inference container for UltraShape
+# Based on NVIDIA PyTorch container for GPU inference
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PATH="/usr/local/cuda/bin:${PATH}" \
+    LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+
+# Install Python and system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.10 \
+    python3-pip \
+    python3-dev \
+    git \
+    wget \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set Python 3.10 as default
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+
+WORKDIR /workspace
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+
+# Install PyTorch with CUDA 12.1 support
+RUN pip3 install --no-cache-dir torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 \
+    --index-url https://download.pytorch.org/whl/cu121
+
+# Install inference-specific dependencies (excluding training-only packages)
+RUN grep -vE "^(deepspeed|tensorboard|wandb|pytorch_lightning|flash_attn)" requirements.txt > requirements_inference.txt && \
+    pip3 install --no-cache-dir -r requirements_inference.txt
+
+# Install FastAPI and uvicorn for API server
+RUN pip3 install --no-cache-dir fastapi==0.115.6 uvicorn[standard]==0.34.0 python-multipart==0.0.20 requests==2.32.3
+
+# Install PyTorch3D (needed for mesh operations)
+RUN pip3 install --no-cache-dir --no-build-isolation \
+    "git+https://github.com/facebookresearch/pytorch3d.git@stable"
+
+# Copy application code
+COPY configs/ configs/
+COPY scripts/ scripts/
+COPY main.py .
+COPY ultrashape/ ultrashape/
+
+# Create directories for checkpoints and outputs
+RUN mkdir -p /workspace/checkpoints /workspace/outputs
+
+# Environment variables for model paths (can be overridden)
+ENV CONFIG_PATH=/workspace/configs/infer_dit_refine.yaml \
+    CHECKPOINT_PATH=/workspace/checkpoints/ultrashape_v1.pt
+
+# Expose API port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python3 -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+
+# Run API server
+CMD ["python3", "scripts/api_server.py"]
