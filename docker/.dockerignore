@@ -1,0 +1,11 @@
+.git
+.github
+docs/
+*.md
+checkpoints/
+outputs/
+__pycache__
+*.pyc
+.DS_Store
+.vscode
+.idea

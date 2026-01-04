@@ -1,0 +1,52 @@
+FROM ubuntu:22.04
+
+# Prevent interactive prompts during build
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    python3.10-dev \
+    wget \
+    xz-utils \
+    libglu1-mesa \
+    libxi6 \
+    libxrender1 \
+    libxkbcommon0 \
+    libsm6 \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Blender 3.6 LTS (headless)
+WORKDIR /opt
+RUN wget -q https://download.blender.org/release/Blender3.6/blender-3.6.5-linux-x64.tar.xz && \
+    tar -xf blender-3.6.5-linux-x64.tar.xz && \
+    rm blender-3.6.5-linux-x64.tar.xz && \
+    ln -s /opt/blender-3.6.5-linux-x64/blender /usr/local/bin/blender
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir \
+    pymeshlab==2025.7 \
+    numpy==1.24.4 \
+    trimesh==4.4.7 \
+    Pillow==12.0.0 \
+    tqdm==4.66.5 \
+    PyYAML==6.0.2
+
+# Copy scripts
+COPY scripts/blender_render.py /workspace/scripts/
+COPY scripts/watertight_mesh.py /workspace/scripts/
+COPY scripts/process_dataset.py /workspace/scripts/
+COPY scripts/sampling.py /workspace/scripts/
+
+# Set entrypoint
+ENTRYPOINT ["python3", "/workspace/scripts/process_dataset.py"]
