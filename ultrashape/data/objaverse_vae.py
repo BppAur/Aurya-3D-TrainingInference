@@ -118,10 +118,10 @@ class ObjaverseDataset(Dataset):
         surface_og_n = np.concatenate([surface_og, normal], axis=1) 
         rng = np.random.default_rng()
 
-        # hard code: first 300k are uniform, last 300k are sharp
-        assert surface_og_n.shape[0] == 600000, f"assume that suface points = 30w uniform + 30w curvature, but {len(surface_og_n)=}"
-        coarse_surface = surface_og_n[:300000]
-        sharp_surface = surface_og_n[300000:]
+        # hard code: first 450k are uniform, last 450k are sharp
+        assert surface_og_n.shape[0] == 900000, f"assume that suface points = 45w uniform + 45w curvature, but {len(surface_og_n)=}"
+        coarse_surface = surface_og_n[:450000]
+        sharp_surface = surface_og_n[450000:]
 
         surface_normal = []
         
