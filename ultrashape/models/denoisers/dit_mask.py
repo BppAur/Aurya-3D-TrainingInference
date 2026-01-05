@@ -49,6 +49,20 @@ except ImportError:
     HAS_FLASH_ATTN = False
     flash_attn_varlen_func = None
 
+# RMSNorm implementation for PyTorch < 2.4
+class RMSNorm(nn.Module):
+    def __init__(self, normalized_shape, eps=1e-6):
+        super().__init__()
+        self.weight = nn.Parameter(torch.ones(normalized_shape))
+        self.eps = eps
+
+    def forward(self, x):
+        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps) * self.weight
+
+# Use torch.nn.RMSNorm if available (PyTorch >= 2.4), otherwise use our implementation
+if not hasattr(nn, 'RMSNorm'):
+    nn.RMSNorm = RMSNorm
+
 
 def modulate(x, shift, scale):
     return x * (1 + scale.unsqueeze(1)) + shift.unsqueeze(1)
