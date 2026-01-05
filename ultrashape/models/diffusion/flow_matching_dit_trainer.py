@@ -251,7 +251,7 @@ class Diffuser(pl.LightningModule):
 
         return loss
 
-    def training_step(self, batch, batch_idx, optimizer_idx=0):
+    def training_step(self, batch, batch_idx):
         loss = self.forward(batch, disable_drop=False)
         split = 'train'
         loss_dict = {
