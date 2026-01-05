@@ -51,13 +51,20 @@ except ImportError:
 
 # RMSNorm implementation for PyTorch < 2.4
 class RMSNorm(nn.Module):
-    def __init__(self, normalized_shape, eps=1e-6):
+    def __init__(self, normalized_shape, eps=1e-6, elementwise_affine=True):
         super().__init__()
-        self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.eps = eps
+        self.elementwise_affine = elementwise_affine
+        if elementwise_affine:
+            self.weight = nn.Parameter(torch.ones(normalized_shape))
+        else:
+            self.register_parameter('weight', None)
 
     def forward(self, x):
-        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps) * self.weight
+        norm_x = x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
+        if self.elementwise_affine:
+            return norm_x * self.weight
+        return norm_x
 
 # Use torch.nn.RMSNorm if available (PyTorch >= 2.4), otherwise use our implementation
 if not hasattr(nn, 'RMSNorm'):
