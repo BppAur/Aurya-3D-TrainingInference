@@ -42,7 +42,12 @@ from einops import rearrange
 from .moe_layers import MoEBlock
 from ...utils import logger, synchronize_timer, smart_load_model
 
-from flash_attn import flash_attn_varlen_func
+try:
+    from flash_attn import flash_attn_varlen_func
+    HAS_FLASH_ATTN = True
+except ImportError:
+    HAS_FLASH_ATTN = False
+    flash_attn_varlen_func = None
 
 
 def modulate(x, shift, scale):
@@ -189,10 +194,10 @@ class CrossAttention(nn.Module):
         q = self.q_norm(q)
         k = self.k_norm(k)
 
-        if has_padding:
+        if has_padding and HAS_FLASH_ATTN:
             seqlens_k = y_mask.sum(dim=1).int()
             q_flat = q.reshape(-1, self.num_heads, self.head_dim)
-            
+
             # For k, v: only keep valid tokens (remove padding)
             # Create indices for valid tokens
             valid_indices = []
@@ -202,15 +207,15 @@ class CrossAttention(nn.Module):
                 batch_indices = torch.arange(valid_len, device=y.device) + i * s2
                 valid_indices.append(batch_indices)
                 cu_seqlens_k.append(cu_seqlens_k[-1] + valid_len)
-            
+
             valid_indices = torch.cat(valid_indices)
             k_flat = k.reshape(b * s2, self.num_heads, self.head_dim)[valid_indices]  # [total_k, h, d]
             v_flat = v.reshape(b * s2, self.num_heads, self.head_dim)[valid_indices]  # [total_k, h, d]
-            
+
             # Create cumulative sequence lengths
             cu_seqlens_q = torch.arange(0, (b + 1) * s1, s1, dtype=torch.int32, device=x.device)
             cu_seqlens_k = torch.tensor(cu_seqlens_k, dtype=torch.int32, device=x.device)
-            
+
             # Call flash attention varlen
             q_flat = q_flat.to(torch.bfloat16)
             k_flat = k_flat.to(torch.bfloat16)
